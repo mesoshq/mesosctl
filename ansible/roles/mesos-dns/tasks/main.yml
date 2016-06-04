@@ -1,0 +1,29 @@
+---
+# file: roles/mesos-dns/tasks/main.yml
+
+- name: Pull Mesos DNS image
+  raw: docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.mesosdns | basename }}
+
+- include: CoreOS.yml
+  when: ansible_os_family == "CoreOS"
+
+- include: Debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Wait for Marathon to come up
+  run_once: true
+  wait_for: host="{{ hostvars[groups['masters'][0]]['ansible_ssh_host'] }}" port=8080 state=started delay=1 timeout=15
+
+- name: Post Mesos DNS application to Marathon
+  run_once: true
+  uri:
+    url: "http://{{ hostvars[groups['masters'][0]]['ansible_ssh_host'] }}:8080/v2/apps"
+    method: POST
+    body: "{{ lookup('template','roles/mesos-dns/templates/mesosdns.json.j2') }}"
+    status_code: 201
+    body_format: json
+    register: status
+    failed_when: "'OK' not in status.msg"

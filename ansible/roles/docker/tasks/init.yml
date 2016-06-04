@@ -1,0 +1,34 @@
+
+- name: Check if /etc/init exists
+  stat: path=/etc/init/
+  register: etc_init
+
+- name: Docker upstart default config file
+  template: src=docker-defaults.j2 dest=/etc/default/docker
+  when: etc_init.stat.exists == true
+  notify:
+    - Restart Docker
+
+- name: Docker init file
+  template: src=docker-init.j2 dest=/etc/init/docker.conf
+  when: etc_init.stat.exists == true
+  notify:
+    - Restart Docker
+
+- name: Check if systemd exists
+  stat: path=/usr/lib/systemd/system/
+  register: systemd_check
+
+- name: Docker systemd default config file
+  template: src=docker-sysconfig.j2 dest=/etc/sysconfig/docker
+  when: systemd_check.stat.exists == true
+  notify:
+    - Reload systemd
+    - Restart Docker
+
+- name: Docker systemd file
+  template: src=docker-service.j2 dest=/lib/systemd/system/docker.service
+  when: systemd_check.stat.exists == true
+  notify:
+    - Reload systemd
+    - Restart Docker

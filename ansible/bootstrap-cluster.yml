@@ -1,0 +1,11 @@
+- name: Bootstrap cluster
+  hosts: all
+  gather_facts: False
+  roles:
+    - role: coreos-bootstrap
+      when: os_family == "CoreOS"
+    - role: docker
+      become: yes
+      become_user: root
+      when: os_family != "CoreOS"
+    - role: common

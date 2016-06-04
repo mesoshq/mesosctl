@@ -1,0 +1,52 @@
+---
+
+- name: Install docker-py
+  pip: name=docker-py
+
+- name: Install httplib2
+  pip: name=httplib2
+
+#- name: Add the local Docker registry and the local hostname with the private IP address to /etc/hosts
+#  become: yes
+#  become_user: root
+#  lineinfile:
+#    dest: /etc/hosts
+#    line: "{{ ansible_ssh_host }} {{ ansible_hostname }}\n{{ registry_config.ip }} {{ registry_config.hostname }}"
+#    insertafter: EOF
+
+- name: Set /etc/hosts to enable local hostname resolution (for Mesos DNS and Marathon)
+  become: yes
+  become_user: root
+  template: src=CoreOS/hosts.j2 dest=/etc/hosts
+
+- name: Create /etc/systemd/system/docker.service.d folder
+  become: yes
+  become_user: root
+  file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+
+- name: Increase ulimit
+  become: yes
+  become_user: root
+  template: src="{{ansible_os_family}}/30-increase-ulimit.conf.j2" dest=/etc/systemd/system/docker.service.d/30-increase-ulimit.conf
+
+- name: Allow insecure registry
+  become: yes
+  become_user: root
+  template: src="{{ansible_os_family}}/50-insecure-registry.conf.j2" dest=/etc/systemd/system/docker.service.d/50-insecure-registry.conf
+  register: result
+  notify:
+    - start unit update
+  tags: registry
+
+- name: Ensure systemd is reloaded after 30-increase-ulimit.conf and 50-insecure-registry.conf have been added
+  become: yes
+  become_user: root
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: Restart Docker service
+  become: yes
+  become_user: root
+  raw: systemctl restart docker.service

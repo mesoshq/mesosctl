@@ -1,0 +1,80 @@
+---
+
+# Install ZooKeeper
+- name: Pull Zookeeper container
+  raw: docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.zookeeper | basename }}
+
+- name: Make sure Zookeeper is configured
+  template: src=zookeeper/zookeeper.service.j2 dest=/etc/systemd/system/zookeeper.service
+  register: result
+  notify:
+    - start zookeeper
+  tags: zookeeper
+
+- name: Ensure systemd is reloaded if zookeeper.service has changed
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: (Re)start zookeeper.service
+  shell: systemctl restart zookeeper.service
+  when: result|changed
+
+- name: Make sure Zookeeper is running and enabled
+  service: name=zookeeper.service state=running enabled=yes
+  tags: zookeeper
+
+# Install Mesos Master
+- name: Pull Mesos Master container
+  raw: docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.master | basename }}
+
+- name: Create folder /var/tmp/mesos/master for Mesos master on host
+  file:
+    path: /var/tmp/mesos/master
+    state: directory
+
+- name: Create folder /var/log/mesos/master for Mesos master on host
+  file:
+    path: /var/log/mesos/master
+    state: directory
+
+- name: Make sure Mesos Master is configured
+  template: src=master/mesos-master.service.j2 dest=/etc/systemd/system/mesos-master.service
+  register: result
+  notify:
+    - start mesos-master
+  tags: mesos-master
+
+- name: Ensure systemd is reloaded if mesos-master.service has changed
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: (Re)start mesos-master.service
+  shell: systemctl restart mesos-master.service
+  when: result|changed
+
+- name: Make sure Mesos Master is running and enabled
+  service: name=mesos-master.service state=running enabled=yes
+  tags: mesos-master
+
+# Install Marathon
+- name: Pull Marathon container
+  raw: docker pull {{ registry }}/{{ docker.images.marathon | basename }}
+
+- name: Make sure Marathon is configured
+  template: src=marathon/marathon.service.j2 dest=/etc/systemd/system/marathon.service
+  register: result
+  notify:
+    - start marathon
+  tags: marathon
+
+- name: Ensure systemd is reloaded if marathon.service has changed
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: (Re)start marathon.service
+  shell: systemctl restart marathon.service
+  when: result|changed
+
+- name: Make sure Marathon is running and enabled
+  service: name=marathon.service state=running enabled=yes
+  tags: marathon

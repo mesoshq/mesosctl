@@ -1,0 +1,26 @@
+---
+
+- name: Gathering facts
+  setup:
+
+- include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Create docker group
+  group: name=docker state=present system=yes
+  when: docker_create_group
+  tags:
+    - config
+
+- name: Create the docker group and add your user
+  command: usermod -aG docker {{ansible_ssh_user}}
+  when: docker_create_group
+  tags:
+    - config
+
+- include: Debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- include: init.yml

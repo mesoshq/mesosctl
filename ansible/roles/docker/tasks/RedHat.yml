@@ -1,0 +1,9 @@
+
+- name: Install Docker Repository
+  template: src=docker-repo.j2 dest=/etc/yum.repos.d/docker.repo
+
+- name: Install Docker Engine
+  yum: name=docker-engine state=present
+  notify:
+    - Reload systemd
+    - Restart Docker

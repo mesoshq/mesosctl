@@ -1,0 +1,79 @@
+---
+- name: Add apt key for mesos
+  apt_key: keyserver=keyserver.ubuntu.com id=E56151BF
+
+- name: Set DISTRO variable
+  shell: "lsb_release -is | tr '[:upper:]' '[:lower:]'"
+  register: distro_var
+
+- name: Set CODENAME variable
+  shell: "lsb_release -cs"
+  register: codename_var
+
+- name: Add apt repository for mesos
+  apt_repository: repo="deb http://repos.mesosphere.com/{{ distro_var.stdout }} {{ codename_var.stdout }} main" update_cache=yes
+
+- name: Install mesos
+  apt: name=mesos update_cache=yes
+
+- name: Stop zookeeper
+  service: name=zookeeper state=stopped
+  when: "'masters' not in group_names"
+  
+- name: Disable zookeeper
+  copy: src=zookeeper.override dest=/etc/init/zookeeper.override
+  when: "'masters' not in group_names"
+
+- name: Stop mesos-master
+  service: name=mesos-master state=stopped
+  when: "'masters' not in group_names"
+
+- name: Disable mesos-master
+  copy: src=mesos-master.override dest=/etc/init/mesos-master.override
+  when: "'masters' not in group_names"
+
+- name: Set zookeeper address for mesos
+  template: src=zk.j2 dest=/etc/mesos/zk
+  notify:
+    - Restart mesos-slave
+
+- name: Set hostname
+  template: src=hostname.j2 dest=/etc/mesos-slave/hostname
+  notify:
+    - Restart mesos-slave
+
+- name: Set IP
+  template: src=ip.j2 dest=/etc/mesos-slave/ip
+  notify:
+    - Restart mesos-slave
+
+- name: Mesos containerizers
+  template: src=containerizers.j2 dest=/etc/mesos-slave/containerizers
+  notify:
+    - Restart mesos-slave
+
+- name: Mesos executor_registration_timeout
+  template: src=executor_registration_timeout.j2 dest=/etc/mesos-slave/executor_registration_timeout
+  notify:
+    - Restart mesos-slave
+
+- name: Set LIBPROCESS_IP env
+  lineinfile:
+    dest: /etc/default/mesos
+    regexp: "^LIBPROCESS_IP"
+    line: "LIBPROCESS_IP={{ ansible_ssh_host }}"
+  notify:
+    - Restart mesos-slave
+  when: "'masters' not in group_names"
+
+- name: Set LIBPROCESS_ADVERTISE_IP env
+  lineinfile:
+    dest: /etc/default/mesos
+    regexp: "^LIBPROCESS_ADVERTISE_IP"
+    line: "LIBPROCESS_ADVERTISE_IP={{ ansible_ssh_host }}"
+  notify:
+    - Restart mesos-slave
+  when: "'masters' not in group_names"
+
+- name: Start mesos-slave
+  service: name=mesos-slave state=started

@@ -1,0 +1,2 @@
+os_version: "{{ ansible_lsb.release if ansible_lsb is defined else ansible_distribution_version }}"
+

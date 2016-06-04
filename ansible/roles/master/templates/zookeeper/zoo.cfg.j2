@@ -1,0 +1,10 @@
+tickTime=2000
+dataDir=/var/lib/zookeeper
+dataLogDir=/var/log/zookeeper
+clientPort=2181
+initLimit=90
+syncLimit=30
+
+{% for server in groups.masters %}
+server.{{ loop.index }}={{hostvars[server]['ansible_ssh_host']}}:2888:3888
+{% endfor %}

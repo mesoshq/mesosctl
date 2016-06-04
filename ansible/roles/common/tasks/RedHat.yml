@@ -1,0 +1,36 @@
+---
+
+- name: Install docker-py
+  become: yes
+  become_user: root
+  pip: name=docker-py
+
+- name: Install httplib2
+  become: yes
+  become_user: root
+  pip: name=httplib2
+
+- name: Install Mesos dependencies
+  become: yes
+  become_user: root
+  yum:
+    name: "{{item}}"
+    update_cache: yes
+  with_items:
+    - tar
+    - xz
+    - unzip
+    - curl
+
+- name: Disable ipv6
+  become: yes
+  become_user: root
+  shell: sysctl -w net.ipv6.conf.all.disable_ipv6=1 && sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
+- name: Add hostname entry to match private IP to the given hostname and the IP for the local Docker registry
+  become: yes
+  become_user: root
+  lineinfile:
+    dest: /etc/hosts
+    insertafter: EOF
+    line: "{{ansible_ssh_host}} {{ansible_hostname}}\n{{ registry_config.ip }} {{ registry_config.hostname }}"

@@ -1,0 +1,5 @@
+- name: Add the nameservers to /etc/resolv.conf
+  lineinfile: dest=/etc/resolv.conf
+              regexp=''
+              insertbefore=BOF
+              line='nameserver {{ansible_ssh_host}}\nline='nameserver {{ansible_ssh_host}}\n{% for server in dns_servers %}nameserver {{server}}\n{% endfor %}''

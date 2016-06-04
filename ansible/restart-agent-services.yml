@@ -1,0 +1,9 @@
+---
+- name: Restart Mesos agent services
+  hosts: agents
+  gather_facts: true
+  become: yes
+  become_user: root
+  tasks:
+    - name: Restart mesos-agent
+      service: name=mesos-slave state=restarted

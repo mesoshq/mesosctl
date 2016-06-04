@@ -1,0 +1,4 @@
+nameserver {{ansible_ssh_host}}
+{% for server in dns_servers %}
+nameserver {{server}}
+{% endfor %}

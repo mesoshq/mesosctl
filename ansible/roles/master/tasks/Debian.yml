@@ -1,0 +1,141 @@
+---
+
+# Install Mesos, ZooKeeper & Marathon
+- name: Add apt key for mesos
+  become: yes
+  become_user: root
+  apt_key: keyserver=keyserver.ubuntu.com id=E56151BF
+
+- name: Set DISTRO variable
+  become: yes
+  become_user: root
+  shell: "lsb_release -is | tr '[:upper:]' '[:lower:]'"
+  register: distro_var
+
+- name: Set CODENAME variable
+  become: yes
+  become_user: root
+  shell: "lsb_release -cs"
+  register: codename_var
+
+- name: Add apt repository for mesos
+  apt_repository: repo="deb http://repos.mesosphere.com/{{ distro_var.stdout }} {{ codename_var.stdout }} main" update_cache=yes
+
+- name: Add openjdk repository
+  apt_repository: repo="ppa:openjdk-r/ppa"
+  when: ansible_lsb.id == 'Ubuntu'
+
+- name: Install mesos
+  apt: name={{item}} update_cache=yes
+  with_items:
+    - mesos
+    - openjdk-8-jre-headless
+    - marathon
+
+- name: Set zookeeper ID
+  template: src=zookeeper/myid.j2 dest=/etc/zookeeper/conf/myid
+  notify:
+    - Restart zookeeper
+
+- name: Append zookeeper IP addresses
+  template: src=zookeeper/zoo.cfg.j2 dest=/etc/zookeeper/conf/zoo.cfg
+  notify:
+    - Restart zookeeper
+
+- name: Set Zookeeper address for Mesos
+  template: src=master/zk.j2 dest=/etc/mesos/zk
+  notify:
+    - Restart mesos-master
+    - Restart marathon
+
+- name: Set quorum
+  template: src=master/quorum.j2 dest=/etc/mesos-master/quorum
+  notify:
+    - Restart mesos-master
+
+- name: Ensure /etc/marathon/conf directory
+  file: path=/etc/marathon/conf state=directory
+
+- name: Set LIBPROCESS_IP for Marathon in /etc/environment
+  lineinfile:
+    dest: /etc/environment
+    regexp: "^LIBPROCESS_IP"
+    line: "LIBPROCESS_IP={{ ansible_ssh_host }}\nLIBPROCESS_PORT=9090"
+  notify:
+    - Restart marathon
+
+#- name: Set LIBPROCESS_IP for Marathon in the init.d script
+#  lineinfile:
+#    dest: /etc/init.d/marathon
+#    regexp: "^PID"
+#    insertafter: "^#PID"
+#    line: "PID=/var/run/marathon.pid\nLIBPROCESS_IP={{ ansible_ssh_host }}\nLIBPROCESS_PORT=9090"
+#  notify:
+#    - Restart marathon
+
+- name: Set mesos-master ip
+  template: src=master/ip.j2 dest=/etc/mesos-master/ip
+  notify:
+    - Restart mesos-master
+
+- name: Set mesos-master hostname
+  template: src=master/hostname.j2 dest=/etc/mesos-master/hostname
+  notify:
+    - Restart mesos-master
+
+- name: Set marathon hostname
+  template: src=marathon/hostname.j2 dest=/etc/marathon/conf/hostname
+  notify:
+    - Restart marathon
+
+- name: Stop mesos-slave
+  service: name=mesos-slave state=stopped
+  when: "'slaves' not in group_names"
+
+- name: Disable mesos-slave
+  copy: src=mesos-slave.override dest=/etc/init/mesos-slave.override
+  when: "'slaves' not in group_names"
+
+- name: Set LIBPROCESS_IP env
+  lineinfile:
+    dest: /etc/default/mesos
+    regexp: "^LIBPROCESS_IP"
+    line: "LIBPROCESS_IP={{ ansible_ssh_host }}"
+  notify:
+    - Restart mesos-master
+    - Restart marathon
+
+- name: Set LIBPROCESS_ADVERTISE_IP env
+  lineinfile:
+    dest: /etc/default/mesos
+    regexp: "^LIBPROCESS_ADVERTISE_IP"
+    line: "LIBPROCESS_ADVERTISE_IP={{ ansible_ssh_host }}"
+  notify:
+    - Restart mesos-master
+    - Restart marathon
+
+- name: Set cluster name
+  lineinfile:
+    dest: /etc/default/mesos-master
+    regexp: "^CLUSTER"
+    line: "CLUSTER={{ cluster_name }}"
+  notify:
+    - Restart mesos-master
+    - Restart marathon
+
+# This is used to overcome a probable bug: http://stackoverflow.com/questions/31858937/transport-endpoint-not-connected-mesos-slave-master
+- name: Set quorum
+  lineinfile:
+    dest: /etc/default/mesos-master
+    regexp: "^MESOS_QUORUM"
+    line: "MESOS_QUORUM=`cat /etc/mesos-master/quorum`"
+  notify:
+    - Restart mesos-master
+    - Restart marathon
+
+- name: Start services
+  service: name={{item}} state=started
+  with_items:
+    - zookeeper
+    - mesos-master
+    - marathon

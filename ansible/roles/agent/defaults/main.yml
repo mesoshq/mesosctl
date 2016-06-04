@@ -1,0 +1,5 @@
+---
+mesos_containerizers: "docker,mesos"
+mesos_executor_timeout: "5mins"
+executor_shutdown_grace_period: "60secs"
+docker_stop_timeout: "50secs"

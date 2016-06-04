@@ -1,0 +1,7 @@
+images:
+  registry: registry:2.3
+  zookeeper: tobilg/zookeeper:3.4.6
+  master: mesosphere/mesos-master:0.28.1-2.0.20.ubuntu1404
+  agent: mesosphere/mesos-slave:0.28.1-2.0.20.ubuntu1404
+  marathon: mesosphere/marathon:v1.1.1
+  mesosdns: tobilg/mesos-dns:v0.5.2

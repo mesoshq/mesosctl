@@ -1,0 +1,9 @@
+ # This playbook will install then Mesos Masters (including Zookeepers) and Marathons on the 'masters' hosts for Debian and RedHat based installations,
+ # and the Docker images for Mesos Masters, Zookeepers and Marathons for CoreOS
+ - name: Install Mesos masters, Marathon and ZooKeeper
+   hosts: masters
+   gather_facts: true
+   become: yes
+   become_user: root
+   roles:
+    - role: master

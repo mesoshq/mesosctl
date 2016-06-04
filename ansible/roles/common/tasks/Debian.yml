@@ -1,0 +1,28 @@
+---
+
+- name: Install docker-py
+  become: yes
+  become_user: root
+  pip: name=docker-py
+
+- name: Install httplib2
+  become: yes
+  become_user: root
+  pip: name=httplib2
+
+- name: Install Mesos dependencies
+  become: yes
+  become_user: root
+  apt: name={{item}} update_cache=yes
+  with_items:
+    - unzip
+
+- name: Disable ipv6
+  become: yes
+  become_user: root
+  shell: sysctl -w net.ipv6.conf.all.disable_ipv6=1 && sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
+- name: Set /etc/hosts to enable local hostname resolution (for Mesos DNS and Marathon)
+  become: yes
+  become_user: root
+  template: src=Debian/hosts.j2 dest=/etc/hosts

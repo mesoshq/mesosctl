@@ -1,0 +1,6 @@
+---
+
+- name: Copy resolv.conf file
+  become: yes
+  become_user: root
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf

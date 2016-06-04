@@ -1,0 +1,11 @@
+---
+- include_vars: "{{ansible_os_family}}.yml"
+
+- include: CoreOS.yml
+  when: ansible_os_family == "CoreOS"
+
+- include: Debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: RedHat.yml
+  when: ansible_os_family == "RedHat"

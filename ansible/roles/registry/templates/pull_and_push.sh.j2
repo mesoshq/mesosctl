@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Pull, tag and push images
+{% for key, value in docker.images.iteritems() %}
+{% if key != "registry" %}
+docker pull {{ value }}
+docker tag {{ value }} {{ registry_config.hostname }}:{{ registry_config.port }}/{{ value | basename }}
+docker push {{ registry_config.hostname }}:{{ registry_config.port }}/{{ value | basename }}
+{% endif %}
+{% endfor %}
+
+# Remove original images
+{% for key, value in docker.images.iteritems() %}
+{% if key != "registry" %}
+docker rmi {{ value }}
+{% endif %}
+{% endfor %}

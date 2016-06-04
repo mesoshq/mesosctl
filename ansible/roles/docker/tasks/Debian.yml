@@ -1,0 +1,35 @@
+
+- name: Add specific key
+  apt_key: keyserver={{docker_repo_key_server}} id={{docker_repo_key}}
+
+- name: Add docker repo
+  apt_repository: repo='deb {{docker_repo}} ubuntu-{{ansible_distribution_release}} main' state=present
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Purge the old repo if it exists
+  apt: name=lxc-docker* purge=yes 
+  ignore_errors: yes
+
+- name: Verify that apt is pulling from the right repository
+  command: apt-cache policy docker-engine
+
+- name: Install the recommended package
+  apt: name=linux-image-extra-{{ansible_kernel}} state=present
+  when: docker_install_recommended_package
+
+- name: Install Docker
+  apt: name=docker-engine state=present update_cache=yes
+
+- name: Change ufw forward policy to ACCEPT
+  command: sed -i 's/DEFAULT_FORWARD_POLICY="DROP"/DEFAULT_FORWARD_POLICY="ACCEPT"/g' /etc/default/ufw
+  when: docker_listen_tcp == True
+
+- name: Reload ufw
+  command: ufw reload
+  when: docker_listen_tcp == True
+
+- name: Allow incoming tcp traffic on {{docker_listen_port}}
+  command: ufw allow {{docker_listen_port}}/tcp
+  when: docker_listen_tcp == True

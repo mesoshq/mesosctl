@@ -1,0 +1,5 @@
+# replace with gist variant
+docker_repo_key_server: "hkp://p80.pool.sks-keyservers.net:80"
+docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"
+docker_repo: "https://apt.dockerproject.org/repo"
+docker_install_recommended_package: True

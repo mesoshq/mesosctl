@@ -1,0 +1,2 @@
+---
+mesosphere_yum_repo: "http://repos.mesosphere.com/el/{{ os_version_major }}/noarch/RPMS/{{ mesosphere_releases[ansible_distribution_major_version] }}"

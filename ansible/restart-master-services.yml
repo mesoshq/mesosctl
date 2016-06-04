@@ -1,0 +1,15 @@
+---
+- name: Restart Mesos master, Marathon and ZooKeeper services
+  hosts: masters
+  gather_facts: true
+  become: yes
+  become_user: root
+  tasks:
+    - name: Restart zookeeper
+      service: name=zookeeper state=restarted
+
+    - name: Restart mesos-master
+      service: name=mesos-master state=restarted
+
+    - name: Restart marathon
+      service: name=marathon state=restarted

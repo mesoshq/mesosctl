@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "mesosctl configuration",
+  "description": "A configuration file for a cluster used by mesosctl",
+  "type": "object",
+  "properties": {
+    "cluster_name": {
+      "description": "The cluster name",
+      "type": "string",
+      "default": "mesos-cluster"
+    },
+    "os": {
+      "description": "Operation system name / code",
+      "type": "string",
+      "enum": ["CoreOS", "Ubuntu Xenial", "Ubuntu Vivid", "Ubuntu Trusty", "Centos 7", "Centos 6", "RedHat Enterprise Linux 7", "RedHat Enterprise Linux 6", "Debian Jessie"]
+    },
+    "os_family": {
+      "description": "Operation system family name / code",
+      "type": "string"
+    },
+    "ssh_user": {
+      "description": "SSH user name",
+      "type": "string"
+    },
+    "ssh_port": {
+      "description": "SSH server port",
+      "type": "integer"
+    },
+    "ssh_key_path": {
+      "description": "Full path to the SSH key to use",
+      "type": "string"
+    },
+    "admin_user": {
+      "description": "Admin user name",
+      "type": "string",
+      "default": "admin"
+    },
+    "admin_password_hash": {
+      "description": "Password hash for the admin user",
+      "type": "string"
+    },
+    "log_directory": {
+      "description": "Directory to log the mesosctl output to",
+      "type": "string",
+      "default": "~/.mesosctl/logs"
+    },
+    "dns_servers": {
+      "description": "List of external DNS servers (IP adresses)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "masters": {
+      "type": "array",
+      "description": "List of Mesos Master nodes (IP adresses)",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "agents": {
+      "type": "array",
+      "description": "List of Mesos Agent nodes (IP adresses)",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "registry": {
+      "type": "array",
+      "description": "Docker registry host (IP adress)",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true
+    },
+    "provisioned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates whether the configuration has been provisioned or not"
+    }
+  },
+  "required": ["cluster_name", "os", "ssh_key_path", "ssh_port", "ssh_user", "dns_servers", "masters", "agents", "registry"]
+}

@@ -1,0 +1,16 @@
+---
+os_version: "{{ ansible_lsb.release if ansible_lsb is defined else ansible_distribution_version }}"
+os_version_major: "
+  {%- if ansible_distribution_major_version is defined -%}
+    {{- ansible_distribution_major_version -}}
+  {%- elif '.' in os_version %}
+    {{- os_version[:os_version.index('.')] -}}
+  {%- else -%}
+    {{- os_version -}}
+  {%- endif -%}
+  "
+docker_yum_repo_uris:
+  Amazon: "centos/{{ 6 if '2014' in os_version or ('2015' in os_version and os_version[os_version.index('.'):] | int <= 3) else 7 }}"
+  CentOS: "centos/{{ os_version_major }}"
+  Fedora: "fedora/{{ os_version_major }}"
+  OracleLinux: "oraclelinux/{{ os_version_major }}"

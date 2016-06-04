@@ -1,0 +1,16 @@
+# Node.js modules
+node_modules/
+
+# Internal tests
+test/
+
+# Temporary files
+temp/
+
+# Ansible retrys
+.retry
+
+# WebStorm
+.idea/
+
+.DS_Store

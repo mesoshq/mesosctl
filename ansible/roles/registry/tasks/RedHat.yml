@@ -1,0 +1,15 @@
+- name: Run Docker image for Registry
+  docker:
+    name: registry
+    image: "{{ docker.images.registry }}"
+    state: reloaded
+    restart_policy: always
+    net: host
+    volumes:
+    - "/opt/registry/data:/var/lib/registry:rw"
+    - "/opt/registry/certs:/certs:ro"
+    ports:
+    - "5000:5000"
+    env:
+      REGISTRY_HTTP_TLS_CERTIFICATE: "/certs/registry.crt"
+      REGISTRY_HTTP_TLS_KEY: "/certs/registry.key"

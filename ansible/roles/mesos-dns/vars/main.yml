@@ -1,0 +1,6 @@
+---
+resources:
+  cpus: 0.2
+  mem: 128
+settings:
+  refresh_timeout: 10

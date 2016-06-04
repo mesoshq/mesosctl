@@ -1,0 +1,33 @@
+{
+    "id": "mesos-dns",
+    "env": {
+        "MESOS_ZK": "{{ zookeeper.mesos_connection }}",
+        "MESOS_DNS_EXTERNAL_SERVERS": "{{ dns_servers | join(',') }}",
+        "MESOS_DNS_REFRESH": "{{ settings.refresh_timeout }}",
+        "MESOS_DNS_HTTP_ENABLED": "true",
+        "MESOS_IP_SOURCES": "mesos,host"
+    },
+    "container": {
+        "docker": {
+            "image": "{{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.mesosdns | basename }}",
+            "network": "HOST"
+        },
+        "type": "DOCKER"
+    },
+    "cpus": {{ resources.cpus }},
+    "mem": {{ resources.mem }},
+    "instances": {{ groups.agents | length }},
+    "constraints": [["hostname", "UNIQUE"]],
+    "healthChecks": [
+        {
+            "path": "/v1/version",
+            "protocol": "HTTP",
+            "gracePeriodSeconds": 30,
+            "intervalSeconds": 10,
+            "timeoutSeconds": 20,
+            "maxConsecutiveFailures": 3,
+            "ignoreHttp1xx": false,
+            "port": 8123
+        }
+    ]
+}

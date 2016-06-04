@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+var path = require("path");
+var mesosCtl = require("../../lib/mesosCtl")();
+
+var configuration = mesosCtl.functions.deserializeYaml(process.env.MESOSCTL_CONFIGURATION_PATH);
+var dockerImages = mesosCtl.functions.deserializeYaml(path.join(__dirname, "../../", "config/docker.yml"));
+
+function toHostName (ipAddress, prefix) {
+    var octetArray = ipAddress.split("\.");
+    return prefix+"-" + octetArray[2] + "" + octetArray[3]
+}
+
+function toHostArray (ipArray, hostMap) {
+    var resultArray = [];
+    ipArray.forEach(function (ipAddress) {
+        resultArray.push(hostMap[ipAddress]);
+    });
+    return resultArray;
+}
+
+function toHostObj (hostArray, prefix) {
+    var hostObj = {};
+    hostArray.forEach(function (ipAddress) {
+        hostObj[toHostName(ipAddress, prefix)] = {
+            "ansible_ssh_host": ipAddress,
+            "ansible_ssh_port": configuration.ssh_port,
+            "ansible_ssh_user": configuration.ssh_user,
+            "ansible_ssh_private_key_file": configuration.ssh_key_path
+        }
+    });
+    return hostObj;
+}
+
+function toIPHostMap (ipArray, prefix) {
+    var map = {};
+    ipArray.forEach(function (ipAddress) {
+        map[ipAddress] = toHostName(ipAddress, prefix);
+    });
+    return map;
+}
+
+function getZooKeeperClusterConnection (ipArray) {
+    return ipArray.join(":2888:3888,") + ":2888:3888";
+}
+
+function getZooKeeperConnection (ipArray) {
+    return "zk://" + ipArray.join(":2181,") + ":2181";
+}
+
+var hostPrefix = "host";
+var uniqueIPs = mesosCtl.functions.getUniqueItemArray(configuration.masters.concat(configuration.agents, configuration.registry));
+var hosts = toHostObj(uniqueIPs, hostPrefix);
+var ipHostMap = toIPHostMap(uniqueIPs, hostPrefix);
+
+var list = {
+    all: {
+        vars: {
+            "registry": configuration.registry[0] + ":5000",
+            registry_config: {
+                "hostname": "registry",
+                "port": 5000,
+                "ip": configuration.registry[0]
+            },
+            "os_family": configuration.os_family,
+            "docker": dockerImages,
+            "zookeeper": {
+                "cluster_connection": getZooKeeperClusterConnection(configuration.masters),
+                "base_connection": getZooKeeperConnection(configuration.masters),
+                "pure_connection": getZooKeeperConnection(configuration.masters).replace("zk://", ""),
+                "mesos_connection": getZooKeeperConnection(configuration.masters) + "/mesos",
+                "marathon_connection": getZooKeeperConnection(configuration.masters) + "/marathon"
+            },
+            "dns_servers": configuration.dns_servers
+        }
+    },
+    masters: {
+        hosts: toHostArray(configuration.masters, ipHostMap),
+        vars: {
+            "cluster_name": configuration.cluster_name
+        }
+    },
+    agents: {
+        hosts: toHostArray(configuration.agents, ipHostMap)
+    },
+    registry: {
+        hosts: toHostArray(configuration.registry, ipHostMap)
+    },
+    "_meta": {
+        "hostvars": hosts
+    }
+};
+
+// Add specific Python interpreter variable if OS family is CoreOS
+if (configuration.os_family === "CoreOS") {
+    list.all.vars["ansible_python_interpreter"] = "PATH=/home/core/bin:$PATH python"
+}
+
+var args = process.argv;
+var command = args[2];
+
+if (command === "--list") {
+    console.log(JSON.stringify(list));
+}
+
+if (command.indexOf("--host=") > -1) {
+    var hostName = command.replace("--host=", "");
+    console.log(JSON.stringify(hosts[hostName]));
+}

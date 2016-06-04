@@ -1,0 +1,9 @@
+---
+# file: provision.yml
+# Provisions the Mesos cluster on bare CoreOS/Debian/CentOS machines
+# and installs the local Docker registry, Marathon and Mesos DNS
+- include: bootstrap-cluster.yml
+- include: install-registry.yml
+- include: install-masters.yml
+- include: install-agents.yml
+- include: install-mesos-dns.yml

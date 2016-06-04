@@ -1,0 +1,10 @@
+os_version: "{{ ansible_lsb.release if ansible_lsb is defined else ansible_distribution_version }}"
+os_version_major: "{{ ansible_distribution_major_version }}"
+
+mesosphere_releases:
+  '7': 'mesosphere-el-repo-7-1.noarch.rpm'
+  '6': 'mesosphere-el-repo-6-2.noarch.rpm'
+
+zookeeper_pkg_names:
+  '7': 'mesosphere-zookeeper'
+  '6': 'mesosphere-zookeeper'

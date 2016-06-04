@@ -1,0 +1,19 @@
+- name: Copy registry.service file
+  become: yes
+  become_user: root
+  template: src=registry.service.j2 dest=/etc/systemd/system/registry.service
+  register: result
+  notify:
+    - start unit update
+  tags: registry
+
+- name: Ensure systemd is reloaded if registry.service has been added
+  become: yes
+  become_user: root
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: Restart Docker Registry service
+  become: yes
+  become_user: root
+  shell: systemctl restart registry.service

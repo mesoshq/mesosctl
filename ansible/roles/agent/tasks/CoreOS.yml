@@ -1,0 +1,38 @@
+---
+# file: roles/slave/tasks/CoreOS.yml
+
+- name: Pull Mesos Slave container
+  raw: docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.agent | basename }}
+
+- name: Create /var/tmp/mesos/slave folder
+  become: yes
+  become_user: root
+  file:
+    path: /var/tmp/mesos/slave
+    state: directory
+
+- name: Create /var/log/mesos/slave folder
+  become: yes
+  become_user: root
+  file:
+    path: /var/log/mesos/slave
+    state: directory
+
+- name: Make sure Mesos Slave is configured
+  template: src=mesos-slave.service.j2 dest=/etc/systemd/system/mesos-slave.service
+  register: result
+  notify:
+    - start mesos-slave
+  tags: mesos-slave
+
+- name: Ensure systemd is reloaded if mesos-slave.service has changed
+  shell: systemctl daemon-reload
+  when: result|changed
+
+- name: (Re)start mesos-slave.service
+  shell: systemctl restart mesos-slave.service
+  when: result|changed
+
+- name: Make sure Mesos Slave is running and enabled
+  service: name=mesos-slave.service state=running enabled=yes
+  tags: mesos-slave

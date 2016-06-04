@@ -1,0 +1,7 @@
+ - name: Install Mesos agents
+   hosts: agents
+   gather_facts: true
+   become: yes
+   become_user: root
+   roles:
+    - role: agent

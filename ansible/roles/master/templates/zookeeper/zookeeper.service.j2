@@ -1,0 +1,25 @@
+[Unit]
+Description=Zookeeper
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=on-failure
+RestartSec=20
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill zookeeper
+ExecStartPre=-/usr/bin/docker rm zookeeper
+ExecStartPre=/usr/bin/docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.zookeeper | basename }}
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
+  --net=host \
+  --name=zookeeper \
+  -e ZOOKEEPER_HOSTS={{ zookeeper.cluster_connection }} \
+  -e LOCAL_ZK_IP={{ ansible_ssh_host }} \
+  -p 2181:2181 \
+  -p 2888:2888 \
+  -p 3888:3888 \
+  {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.zookeeper | basename }}"
+ExecStop=/usr/bin/docker stop zookeeper
+
+[Install]
+WantedBy=multi-user.target

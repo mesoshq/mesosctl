@@ -1,0 +1,25 @@
+[Unit]
+Description=Docker Registry
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=on-failure
+RestartSec=20
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill registry
+ExecStartPre=-/usr/bin/docker rm registry
+ExecStartPre=/usr/bin/docker pull {{ docker.images.registry }}
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
+  --net=host \
+  --name=registry \
+  -p 5000:5000 \
+  -v /opt/registry/data:/var/lib/registry \
+  -v /opt/registry/certs:/certs \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/registry.key \
+  {{ docker.images.registry }}"
+ExecStop=/usr/bin/docker stop registry
+
+[Install]
+WantedBy=multi-user.target

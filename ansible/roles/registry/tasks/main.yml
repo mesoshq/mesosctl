@@ -1,0 +1,34 @@
+---
+# file: roles/registry/tasks/main.yml
+- include_vars: "{{ansible_os_family}}.yml"
+
+- name: Pull Registry container
+  shell: docker pull {{ docker.images.registry }}
+
+- name: Create data directory on host
+  file:
+    path: /opt/registry/data
+    state: directory
+
+- name: Create certs directory on host
+  file:
+    path: /opt/registry/certs
+    state: directory
+
+- name: Create self-signed SSL cert
+  command: 'openssl req -new -nodes -x509 -subj "/C=DE/ST=Hamburg/L=Hamburg/O=IT/CN={{registry_config.hostname}}" -days 3650 -keyout /opt/registry/certs/registry.key -out /opt/registry/certs/registry.crt -extensions v3_ca creates=/opt/registry/certs/registry.crt'
+
+- include: Debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- include: CoreOS.yml
+  when: ansible_os_family == "CoreOS"
+
+- name: Copy pull_and_push.sh file
+  template: src=pull_and_push.sh.j2 dest=/tmp/pull_and_push.sh mode=0755
+
+- name: Pull all required Docker images and push to local registry
+  shell: /tmp/pull_and_push.sh
