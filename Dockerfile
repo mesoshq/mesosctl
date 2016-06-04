@@ -3,7 +3,7 @@ FROM williamyeh/ansible:alpine3
 MAINTAINER tobilg@gmail.com
 
 # Node.js installation taken from https://github.com/mhart/alpine-node/blob/master/Dockerfile
-ENV VERSION=v4.4.4 NPM_VERSION=2
+ENV VERSION=v4.4.5 NPM_VERSION=2
 
 ENV CONFIG_FLAGS="--fully-static --without-npm" DEL_PKGS="libgcc libstdc++" RM_DIRS=/usr/include
 
@@ -40,6 +40,6 @@ RUN apk add --no-cache curl wget make gcc g++ python linux-headers paxctl libgcc
     /usr/share/man /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp /root/.gnupg \
     /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html
 
-#RUN npm install -g mesosctl@0.1.0
+RUN npm install -g mesosctl@0.1.0
 
-#CMD [ "mesosctl", "--version" ]
+CMD [ "mesosctl", "--version" ]
