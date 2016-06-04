@@ -13,8 +13,10 @@ You might think of `mesosctl` as a mixture of [DC/OS](http://www.dcos.io) and [m
 
 ## Concepts
 
-`mesosctl` is running a "sub-shell" application (written as a Node.js module using [vorpal.js](https://github.com/dthree/vorpal)), meaning it starts a process which keeps the state of the configurations in memory. Unless you `exit` the `mesosctl` shell, you can directly interact with you cluster.  
-It uses [Ansible](http://docs.ansible.com/ansible/intro_installation.html) to run the OS-individal tasks to set up a Mesos cluster. This is based on configuration files which are stored as YAML (see [Usage](#usage).  
+`mesosctl` is running a "sub-shell" application (written as a Node.js module using [vorpal.js](https://github.com/dthree/vorpal)), meaning it starts a process which keeps the state of the configurations in memory. Unless you `exit` the `mesosctl` shell, you can directly interact with you cluster.
+
+It uses [Ansible](http://docs.ansible.com/ansible/intro_installation.html) to run the OS-individal tasks to set up a Mesos cluster. This is based on configuration files which are stored as YAML (see [Usage](#usage)).
+
 After the cluster has been set up, `mesosctl` uses the APIs of the Mesos Masters/Agents, as well as the Marathon API to provide the interactive functionality.
 
 ## Status
@@ -109,6 +111,14 @@ See the following links on how to configure SSH access for cloud-hosted nodes:
 
 ## Usage
 
+Once you have installed `mesosctl` either as global NPM module or as Docker container (having the wrapper script in the path), you can use
+
+```
+$ mesosctl
+```
+
+to open the `mesosctl` sub-shell application.
+
 ### Create a configuration file
 
 Configuration files for `mesosctl` are YAML files. To be able to provision a Mesos cluster, you'll need to specify the following details:
@@ -174,9 +184,7 @@ If the configuration is valid, then you can start with the provisioning of the c
 mesosctl $ cluster provision --verbose
 ```
 
-This may take a while, because `mesosctl` will trigger the installation of all required software on the give Vagrant cluster hosts.  
-Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance.  
-The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
+This may take a while, because `mesosctl` will trigger the installation of all required software on the give Vagrant cluster hosts. Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
 
 ```
 mesosctl $ cluster status
