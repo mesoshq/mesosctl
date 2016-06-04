@@ -47,9 +47,13 @@ You can start the Docker image by running
 
     docker run --net=host -it mesoshq/mesosctl mesosctl
     
-If you want to use pre-existing local configurations, please map the relevant folder as a volume like this: `-v /path/to/local/config:/opt/mesosctl/config`. Also, make sure that you host's network settings are configured in a way that the Docker daemon networking can "see" the Vagrant networks.
+If you want to use pre-existing local configurations, please map the relevant folder as a volume like this: 
 
-You can also use a Bash wrapper script:
+    -v /path/to/local/config:/opt/mesosctl/config
+
+Also, make sure that you host's network settings are configured in a way that the Docker daemon networking can "see" the Vagrant networks.
+
+You can also use a Bash wrapper script, which you should place somewhere in the `PATH`, e.g. save the script somewhere and create a symlink to `/usr/local/bin`:
 
 ```bash
 #!/bin/bash
@@ -113,7 +117,7 @@ See the following links on how to configure SSH access for cloud-hosted nodes:
 
 Once you have installed `mesosctl` either as global NPM module or as Docker container (having the wrapper script in the path), you can use
 
-```
+```bash
 $ mesosctl
 ```
 
@@ -135,7 +139,7 @@ Configuration files for `mesosctl` are YAML files. To be able to provision a Mes
 
 An example configuration file is the following:
 
-```
+```bash
 cluster_name: my_first_mesos_cluster
 os_family: Debian
 ssh_key_path: /Users/developer/.vagrant.d/insecure_private_key
@@ -161,7 +165,7 @@ registry:
 
 If you have a pre-existing configuration file (e.g. when you use a Vagrant cluster setup), you can use the following command to load it:
 
-```
+```bash
 mesosctl $ config load /path/to/mesosctl.yml
 ```
 
@@ -173,20 +177,20 @@ Have a look at the [config set](#configuration) commands to create the cluster c
 
 Once you have a configuation, you can run
 
-```
+```bash
 mesosctl $ config validate
 --> The current configuration is valid!
 ```
 
 If the configuration is valid, then you can start with the provisioning of the cluster:
 
-```
+```bash
 mesosctl $ cluster provision --verbose
 ```
 
 This may take a while, because `mesosctl` will trigger the installation of all required software on the give Vagrant cluster hosts. Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
 
-```
+```bash
 mesosctl $ cluster status
 
 Cluster 'mesos_cluster_ubuntu' utilization:
@@ -199,7 +203,7 @@ Cluster 'mesos_cluster_ubuntu' utilization:
 
 You can also retrieve the current leader's address, which you can use in a browser to get the Mesos Master's UI:
 
-```
+```bash
 mesosctl $ cluster get leader
 --> Current leading Master's address is 172.17.10.103:5050
 ```
