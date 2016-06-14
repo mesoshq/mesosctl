@@ -385,7 +385,7 @@ module.exports = function(vorpal, mesosCtl) {
         });
 
     vorpal
-        .command('cluster ssh <ipAddress> [command]', 'Issue a SSH command on the remote host')
+        .command('cluster ssh <ipAddress> <command>', 'Issue a SSH command on the remote host')
         .autocomplete({
             data: function () {
                 if (!mesosCtl.config.masters || !mesosCtl.config.agents || !mesosCtl.config.registry) {
