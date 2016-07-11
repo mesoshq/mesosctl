@@ -7,7 +7,7 @@ test/
 # Temporary files
 temp/
 
-# Ansible retrys
+# Ansible retry files
 .retry
 
 # WebStorm
