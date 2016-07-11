@@ -1,5 +1,19 @@
 ---
 
+- name: Add the repository for pip
+  become: yes
+  become_user: root
+  yum:
+    name: "epel-release"
+    update_cache: yes
+
+- name: Install pip
+  become: yes
+  become_user: root
+  yum:
+    name: "python-pip"
+    update_cache: yes
+
 - name: Install docker-py
   become: yes
   become_user: root
