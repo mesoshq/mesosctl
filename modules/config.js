@@ -233,54 +233,63 @@ module.exports = function(vorpal, mesosCtl) {
                 
             } else { // Load from .mesosctl folder
 
-                self.prompt({
-                    type: 'list',
-                    name: 'cluster_name',
-                    message: 'Please select the configuration to load: ',
-                    choices: mesosCtl.functions.listConfigurations()
-                }, function(result){
+                if (mesosCtl.functions.listConfigurations().length > 0) {
 
-                    var cluster_name = result.cluster_name,
-                        configurationPath = mesosCtl.options.configStoragePath + "/" + result.cluster_name + ".yml";
+                    self.prompt({
+                        type: 'list',
+                        name: 'cluster_name',
+                        message: 'Please select the configuration to load: ',
+                        choices: mesosCtl.functions.listConfigurations()
+                    }, function(result){
 
-                    if (!mesosCtl.functions.checkIfConfigurationExists(configurationPath)) {
-                        self.log("The cluster configuration doesn't exist! Please choose another cluster name, or 'config create' to create a cluster configuration!");
-                    } else {
-                        // Check if there's already something configured before loading another configuration
-                        if (Object.getOwnPropertyNames(mesosCtl.config).length > 0) {
-                            self.prompt({
-                                type: 'confirm',
-                                name: 'overwrite',
-                                default: false,
-                                message: 'There is already a configuration currently loaded, discard: '
-                            }, function(result){
+                        var cluster_name = result.cluster_name,
+                            configurationPath = mesosCtl.options.configStoragePath + "/" + result.cluster_name + ".yml";
 
-                                // Check if configuration should be overwritten
-                                if (result.overwrite) {
-
-                                    // Set configPath
-                                    var configPath = mesosCtl.functions.getLocalConfigPath(cluster_name);
-
-                                    mesosCtl.functions.loadAndValidateConfiguration(configPath, mesosCtl, callback);
-
-                                } else {
-
-                                    self.log("--> The existing configuration will not be overwritten.");
-                                    callback();
-
-                                }
-                            });
+                        if (!mesosCtl.functions.checkIfConfigurationExists(configurationPath)) {
+                            self.log("The cluster configuration doesn't exist! Please choose another cluster name, or 'config create' to create a cluster configuration!");
                         } else {
+                            // Check if there's already something configured before loading another configuration
+                            if (Object.getOwnPropertyNames(mesosCtl.config).length > 0) {
+                                self.prompt({
+                                    type: 'confirm',
+                                    name: 'overwrite',
+                                    default: false,
+                                    message: 'There is already a configuration currently loaded, discard: '
+                                }, function(result){
 
-                            // Set configPath
-                            var configPath = mesosCtl.functions.getLocalConfigPath(cluster_name);
+                                    // Check if configuration should be overwritten
+                                    if (result.overwrite) {
 
-                            mesosCtl.functions.loadAndValidateConfiguration(configPath, mesosCtl, callback);
+                                        // Set configPath
+                                        var configPath = mesosCtl.functions.getLocalConfigPath(cluster_name);
 
+                                        mesosCtl.functions.loadAndValidateConfiguration(configPath, mesosCtl, callback);
+
+                                    } else {
+
+                                        self.log("--> The existing configuration will not be overwritten.");
+                                        callback();
+
+                                    }
+                                });
+                            } else {
+
+                                // Set configPath
+                                var configPath = mesosCtl.functions.getLocalConfigPath(cluster_name);
+
+                                mesosCtl.functions.loadAndValidateConfiguration(configPath, mesosCtl, callback);
+
+                            }
                         }
-                    }
 
-                });
+                    });
+
+                } else {
+
+                    self.log("--> There are no configurations to load. Please create one first.");
+                    callback();
+
+                }
 
             }
 
