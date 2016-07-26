@@ -8,7 +8,7 @@ test/
 temp/
 
 # Ansible retry files
-.retry
+*.retry
 
 # WebStorm
 .idea/
