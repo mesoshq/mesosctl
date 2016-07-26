@@ -12,7 +12,7 @@ function createConfig (mesosCtl, callback) {
         if (error) {
             self.log("An error occurred: " + JSON.stringify(error));
             self.log(error.stack);
-            callback();
+            callback(error, null);
         } else {
 
             var prompts = {};
@@ -33,6 +33,9 @@ function createConfig (mesosCtl, callback) {
                         }, function (result) {
                             if (result.hasOwnProperty(property)) {
                                 callback(null, result[property]);
+                            } else {
+                                // New
+                                callback("Error with property " + property, null);
                             }
                         });
                     };
@@ -83,8 +86,13 @@ function createConfig (mesosCtl, callback) {
                                     callback(null, result[property]);
                                 }
 
+                            } else {
+                                // New
+                                callback("There was an error with property" + property, null);
                             }
+
                         });
+
                     };
 
                 }
@@ -95,14 +103,13 @@ function createConfig (mesosCtl, callback) {
             async.series(prompts, function (error, results) {
                 if (error) {
                     self.log("An error occured:");
-                    self.log(error);
-                    callback();
+                    callback(error, null);
                 } else {
                     // Validate configuration
                     mesosCtl.functions.isValidSchema("config", results, function (error, isValid) {
                         if (error) {
                             self.log("--> An error occurred: " + JSON.stringify(error));
-                            callback();
+                            callback(error, null);
                         } else {
                             if (isValid) {
                                 // Set the given configuration details as current configuration
@@ -144,8 +151,11 @@ function createConfig (mesosCtl, callback) {
                                 callback();
                             }
                         }
+
                     });
+
                 }
+
             });
 
         }
@@ -184,7 +194,7 @@ module.exports = function(vorpal, mesosCtl) {
                 });
 
             } else {
-                createConfig.bind(self, mesosCtl, callback);
+                createConfig.bind(self, mesosCtl, callback)();
             }
 
         });
