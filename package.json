@@ -1,6 +1,6 @@
 {
   "name": "mesosctl",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A command-line tool to dynamically provision and manage Mesos clusters and their applications",
   "main": "bin/mesosctl.js",
   "scripts": {
