@@ -1,5 +1,5 @@
 images:
-  registry: registry:2.3
+  registry: registry:2.4
   zookeeper: tobilg/zookeeper:3.4.6
   master: mesosphere/mesos-master:0.28.1-2.0.20.ubuntu1404
   agent: mesosphere/mesos-slave:0.28.1-2.0.20.ubuntu1404
