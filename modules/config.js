@@ -1,6 +1,5 @@
 var path = require("path"),
     passwordHash = require("password-hash"),
-    fsAutocomplete = require("vorpal-autocomplete-fs"),
     async = require("async");
 
 function createConfig (mesosCtl, callback) {
@@ -201,7 +200,6 @@ module.exports = function(vorpal, mesosCtl) {
 
     vorpal
         .command('config load [pathToConfig]', 'Loads an existing configuration, either from specified path or from a selection of existing configurations')
-        .autocomplete(fsAutocomplete())
         .action(function(args, callback) {
             var self = this;
 
@@ -238,6 +236,20 @@ module.exports = function(vorpal, mesosCtl) {
                         }
 
                     });
+
+                } else {
+
+                    // Check if there's a file at the specified path
+                    if (mesosCtl.functions.checkIfConfigurationExists(args.pathToConfig)) {
+
+                        mesosCtl.functions.loadAndValidateConfiguration(args.pathToConfig, mesosCtl, callback);
+
+                    } else {
+
+                        self.log("An error occurerred: The provided path doesn't exist!");
+                        callback();
+
+                    }
 
                 }
                 
