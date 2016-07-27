@@ -21,7 +21,7 @@ After the cluster has been set up, `mesosctl` uses the APIs of the Mesos Masters
 
 ## Status
 
-The current version is `0.1.4`, which is the initial release. We consider it as `alpha` and a developer preview.
+The current version is `0.1.4`, which is an early release. We consider it as `alpha` and a developer preview.
 
 ## Installation
 
@@ -188,7 +188,7 @@ If the configuration is valid, then you can start with the provisioning of the c
 mesosctl $ cluster provision --verbose
 ```
 
-This may take a while, because `mesosctl` will trigger the installation of all required software on the give Vagrant cluster hosts. Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
+This may take a while, because `mesosctl` will trigger the installation of all required software on the configured cluster hosts. Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
 
 ```bash
 mesosctl $ cluster status
@@ -255,7 +255,7 @@ You can provison a cluster based on the before defined configuration, and get st
 cluster provision [options]                  Provisions the cluster based on the current configuration
 cluster status                               Display the cluster status
 cluster status agent <agentIPAddress>        Display the Mesos agent status and utilization
-cluster ssh <ipAddress> [command]            Issue a SSH command on the remote host
+cluster ssh <ipAddress> [command]            Issue a SSH command on the remote host. The command must be wrapped in double quotation marks, like `"ls -la"`.
 cluster get leader                           Returns the currently leading Mesos Master's IP address
 ```
 
