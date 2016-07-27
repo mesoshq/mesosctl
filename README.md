@@ -21,7 +21,7 @@ After the cluster has been set up, `mesosctl` uses the APIs of the Mesos Masters
 
 ## Status
 
-The current version is `0.1.4`, which is an early release. We consider it as `alpha` and a developer preview.
+The current version is `0.1.5`, which is an early release. We consider it as `alpha` and a developer preview.
 
 ## Installation
 
