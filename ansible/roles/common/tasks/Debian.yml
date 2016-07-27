@@ -1,4 +1,8 @@
 ---
+- name: Install python pip
+  become: yes
+  become_user: root
+  apt: name=python-pip
 
 - name: Install docker-py
   become: yes
