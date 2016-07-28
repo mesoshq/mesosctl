@@ -12,6 +12,8 @@ module.exports = function(vorpal, mesosCtl) {
             if (!mesosCtl.functions.checkRepository()) {
                 self.log("--> Installing the DC/OS repository locally!");
                 mesosCtl.functions.downloadRepository();
+                self.log("--> Initializing the local package index!");
+                mesosCtl.functions.initPackageIndex();
                 self.log("--> Done!");
                 callback();
             } else {
@@ -27,8 +29,10 @@ module.exports = function(vorpal, mesosCtl) {
 
             var self = this;
 
-            self.log("--> Updating the local DC/OS repository!");
+            self.log("--> Downloading the latest DC/OS repository!");
             mesosCtl.functions.downloadRepository();
+            self.log("--> Updating the local DC/OS repository and package index!");
+            mesosCtl.functions.initPackageIndex();
             self.log("--> Done!");
 
             callback();

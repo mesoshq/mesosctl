@@ -1,75 +1,12 @@
 var request = require("request"),
     MesosDNSAgent = require("mesosdns-http-agent"),
     Mustache = require("mustache"),
-    lunr = require("lunr");
+    chalk = require('chalk');
 
 // Overwrite Mustache.js HTML escaping
 Mustache.escape = function (value) {
     return value;
 };
-
-var packageIndex = lunr(function () {
-    this.field('tags', {boost: 10});
-    this.field('description');
-    this.field('name');
-    this.ref('name')
-});
-
-var packages = [];
-var packageMap = {};
-var packageArray = [];
-var packagesLoaded = false;
-
-function loadPackages (repositoryData) {
-
-    packages = repositoryData.packages;
-
-    packages.forEach(function (pkg){
-
-        // Index package in lunr for package search
-        packageIndex.add({
-            name: pkg.name,
-            description: pkg.description,
-            tags: pkg.tags
-        });
-
-        // Add package to packageArray
-        packageArray.push(pkg.name);
-
-        // Add to packageMap
-        packageMap[pkg.name] = pkg;
-
-    });
-
-}
-
-function getDefaultRequiredConfiguration(config) {
-
-    var defaults = {};
-
-    if (config.required && Array.isArray(config.required)) {
-        // Prepopulate the defaults object with the defaults from config
-        config.required.forEach(function (required) {
-
-            var requiredProperties = config.properties[required].required;
-
-            requiredProperties.forEach(function (requiredProperty) {
-
-                // Create subobject if not yet present
-                if (!defaults[required]) {
-                    defaults[required] = {};
-                }
-
-                defaults[required][requiredProperty] = config.properties[required].properties[requiredProperty].default;
-
-            });
-
-        });
-    }
-
-    return defaults;
-
-}
 
 function getDefaultConfiguration (config) {
 
@@ -133,7 +70,7 @@ function installPackage (payload, mesosCtl, cb) {
             "mesosTLD": ".mesos"
         },
         method: "POST",
-        url: "http://leader.mesos:8080/v2/apps",
+        url: mesosCtl.options.marathonBaseUrl + "/v2/apps",
         json: true,
         body: payload
     };
@@ -185,28 +122,20 @@ function handleError (error, data) {
 
 module.exports = function(vorpal, mesosCtl) {
 
-    if (mesosCtl.functions.checkRepository()) {
-        loadPackages(mesosCtl.functions.getLocalRepositoryIndex());
-        packagesLoaded = true;
-    }
+    // Init package index if repository is installed
+    mesosCtl.functions.initPackageIndex();
 
     vorpal
         .command('package install <packageName>', 'Installs a package')
         .option("--config <pathToConfig>", "The absolute path to the package's configuration")
-        .autocomplete(packageArray)
+        .autocomplete(mesosCtl.packages.list)
         .action(function(args, callback) {
             var self = this;
-
-            self.log(JSON.stringify(args));
 
             if (!mesosCtl.functions.checkRepository()) {
                 self.log("--> The DC/OS Universe repository has not yet been installed locally! Please run 'repository download'.");
                 callback();
             } else {
-
-                if (!packagesLoaded) {
-                    loadPackages(mesosCtl.functions.getLocalRepositoryIndex());
-                }
 
                 self.prompt({
                     type: 'list',
@@ -214,7 +143,7 @@ module.exports = function(vorpal, mesosCtl) {
                     message: 'Please select a version to install: ',
                     choices: function () {
                         var versions = [];
-                        Object.getOwnPropertyNames(packageMap[args.packageName].versions).forEach(function (version) {
+                        Object.getOwnPropertyNames(mesosCtl.packages.map[args.packageName].versions).forEach(function (version) {
                             versions.push(version);
                         });
                         return versions;
@@ -222,13 +151,13 @@ module.exports = function(vorpal, mesosCtl) {
                 }, function(versionResult) {
 
                     // Load the config file
-                    var config = mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[versionResult.packageVersion], "config");
+                    var config = mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[versionResult.packageVersion], "config");
 
                     // Load the package info file
-                    var package = mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[versionResult.packageVersion], "package");
+                    var package = mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[versionResult.packageVersion], "package");
 
                     // Load the Mustache template for Marathon
-                    var marathonTemplate = mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[versionResult.packageVersion], "marathon");
+                    var marathonTemplate = mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[versionResult.packageVersion], "marathon");
 
                     // View placeholder
                     var view = {};
@@ -250,11 +179,13 @@ module.exports = function(vorpal, mesosCtl) {
                                         // Set custom configuration as "view"
                                         view = customConfig;
 
-                                        // Show preInstall Notes
-                                        self.log(package.preInstallNotes);
+                                        // Show preInstall Notes if they exist
+                                        if (package.preInstallNotes) {
+                                            self.log(package.preInstallNotes);
+                                        }
 
                                         // Add resource information to default configuration
-                                        view.resource =  mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[versionResult.packageVersion], "resource");
+                                        view.resource =  mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[versionResult.packageVersion], "resource");
 
                                         self.log(JSON.stringify(view));
                                         self.log(Mustache.render(marathonTemplate, view));
@@ -265,6 +196,7 @@ module.exports = function(vorpal, mesosCtl) {
                                         // Run package installation
                                         installPackage(payload, mesosCtl, function (error, installationOk) {
                                             if (installationOk) {
+                                                // Show postInstall Notes if they exist
                                                 if (package.postInstallNotes) {
                                                     self.log(package.postInstallNotes + "\n");
                                                 } else {
@@ -302,13 +234,13 @@ module.exports = function(vorpal, mesosCtl) {
                         // Get default configuration
                         view = getDefaultConfiguration(config);
 
-                        self.log(JSON.stringify(view));
-
-                        // Show preInstall Notes
-                        self.log(package.preInstallNotes);
+                        // Show preInstall Notes if they exist
+                        if (package.preInstallNotes) {
+                            self.log(package.preInstallNotes);
+                        }
 
                         // Add resource information to default configuration
-                        view.resource =  mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[versionResult.packageVersion], "resource");
+                        view.resource =  mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[versionResult.packageVersion], "resource");
 
                         // Parse Marathon app template
                         var payload = JSON.parse(Mustache.render(marathonTemplate, view));
@@ -316,6 +248,7 @@ module.exports = function(vorpal, mesosCtl) {
                         // Run package installation
                         installPackage(payload, mesosCtl, function (error, installationOk) {
                             if (installationOk) {
+                                // Show postInstall Notes if they exist
                                 if (package.postInstallNotes) {
                                     self.log(package.postInstallNotes + "\n");
                                 } else {
@@ -349,7 +282,7 @@ module.exports = function(vorpal, mesosCtl) {
 
     vorpal
         .command('package describe <packageName>', 'Displays information about a package')
-        .autocomplete(packageArray)
+        .autocomplete(mesosCtl.packages.list)
         .option("--options <pathToOptions>", "Use the package installation options provides by a specific file")
         .option("--package-versions", "Show the available package versions")
         //.option("--render", "Populate the package's templates with values from package's config.json and potentially a user-supplied configuration")
@@ -362,24 +295,20 @@ module.exports = function(vorpal, mesosCtl) {
                 callback();
             } else {
 
-                if (!packagesLoaded) {
-                    loadPackages(mesosCtl.functions.getLocalRepositoryIndex());
-                }
-
                 if (args.options.hasOwnProperty("package-versions")) {
                     var header = "The package '" + args.packageName + "' currently has the following versions:";
                     self.log(header);
                     self.log(mesosCtl.functions.rightPad("-", header.length, "-"));
-                    self.log(Object.getOwnPropertyNames(packageMap[args.packageName].versions).join("\n"));
+                    self.log(Object.getOwnPropertyNames(mesosCtl.packages.map[args.packageName].versions).join("\n"));
                 } else if (args.options.hasOwnProperty("render")) {
                     // TODO: Implement!
                 } else {
                     var header = "Package '" + args.packageName + "':";
-                    self.log(header);
+                    self.log(chalk.green.bold(header));
                     self.log(mesosCtl.functions.rightPad("-", header.length, "-"));
-                    self.log(mesosCtl.functions.rightPad("Description:", 17, " ") + packageMap[args.packageName].description);
-                    self.log(mesosCtl.functions.rightPad("Current version:", 17, " ") + packageMap[args.packageName].currentVersion);
-                    self.log(mesosCtl.functions.rightPad("Tags:", 17, " ") + packageMap[args.packageName].tags.join(", "));
+                    self.log(chalk.bold(mesosCtl.functions.rightPad("Description:", 17, " ")) + mesosCtl.packages.map[args.packageName].description);
+                    self.log(chalk.bold(mesosCtl.functions.rightPad("Current version:", 17, " ")) + mesosCtl.packages.map[args.packageName].currentVersion);
+                    self.log(chalk.bold(mesosCtl.functions.rightPad("Tags:", 17, " ")) + mesosCtl.packages.map[args.packageName].tags.join(", "));
                 }
 
                 callback();
@@ -390,7 +319,7 @@ module.exports = function(vorpal, mesosCtl) {
 
     vorpal
         .command('package uninstall <packageName>', 'Uninstalls a package')
-        .autocomplete(packageArray)
+        .autocomplete(mesosCtl.packages.list)
         .action(function(args, callback) {
 
             var self = this;
@@ -398,17 +327,13 @@ module.exports = function(vorpal, mesosCtl) {
             if (!mesosCtl.functions.checkRepository()) {
                 self.log("--> The DC/OS Universe repository has not yet been installed locally! Please run 'repository install'.");
                 callback();
-            } else if (packageArray.indexOf(args.packageName) === -1) {
+            } else if (mesosCtl.packages.list.indexOf(args.packageName) === -1) {
                 self.log("--> An error occurred: The given package name '" + args.packageName + "' cannot be found in the repository. Please check whether the name is correct!");
                 callback();
             } else {
 
-                if (!packagesLoaded) {
-                    loadPackages(mesosCtl.functions.getLocalRepositoryIndex());
-                }
-
                 // Load the package info file
-                var package = mesosCtl.functions.getPackageFile(args.packageName, packageMap[args.packageName].versions[packageMap[args.packageName].currentVersion], "package");
+                var package = mesosCtl.functions.getPackageFile(args.packageName, mesosCtl.packages.map[args.packageName].versions[mesosCtl.packages.map[args.packageName].currentVersion], "package");
 
                 // Determine if the package contains a framework, or is just as Marathon app
                 var isFramework = (package && package.hasOwnProperty("framework") ? package["framework"] : false);
@@ -522,19 +447,19 @@ module.exports = function(vorpal, mesosCtl) {
                 callback();
             } else {
 
-                if (!packagesLoaded) {
-                    loadPackages(mesosCtl.functions.getLocalRepositoryIndex());
-                }
-
-                var searchResults = packageIndex.search(args.searchString);
+                var searchResults = mesosCtl.packages.index.search(args.searchString);
                 var searchResponse = [];
+                var searchResponseIndex = 1;
 
                 var header = "Found " + searchResults.length + " potential matches:";
-                self.log(header);
+                self.log(chalk.bold(header));
                 self.log(mesosCtl.functions.rightPad("-", header.length, "-"));
 
                 searchResults.forEach(function (result) {
-                    searchResponse.push(result.ref + ": " + packageMap[result.ref].description)
+                    searchResponse.push(chalk.green.bold(result.ref));
+                    searchResponse.push(mesosCtl.packages.map[result.ref].description.replace(/\n/g, ""));
+                    searchResponse.push("");
+                    searchResponseIndex++;
                 });
 
                 self.log(searchResponse.join("\n"));
