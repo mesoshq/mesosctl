@@ -92,7 +92,7 @@ var list = {
 
 // Add specific Python interpreter variable if OS family is CoreOS
 if (configuration.os_family === "CoreOS") {
-    list.all.vars["ansible_python_interpreter"] = "PATH=/home/core/bin:$PATH python"
+    list.all.vars["ansible_python_interpreter"] = "/home/core/bin/python"
 }
 
 var args = process.argv;
