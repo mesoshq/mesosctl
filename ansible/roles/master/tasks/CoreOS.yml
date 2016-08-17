@@ -44,7 +44,7 @@
 
 # Install Marathon
 - name: Pull Marathon container
-  raw: docker pull {{ registry }}/{{ docker.images.marathon | basename }}
+  raw: docker pull {{ registry_config.hostname }}:{{ registry_config.port }}/{{ docker.images.marathon | basename }}
 
 - name: Make sure Marathon is configured
   template: src=marathon/marathon.service.j2 dest=/etc/systemd/system/marathon.service
