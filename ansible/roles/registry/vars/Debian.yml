@@ -2,6 +2,5 @@
 # Overwrite variable from "all"
 docker:
   images:
-    registry: registry:2.3
+    registry: registry:2.4
     mesosdns: tobilg/mesos-dns:v0.5.2
-    chronos: tobilg/chronos:0.3.0
