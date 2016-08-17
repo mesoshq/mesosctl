@@ -53,10 +53,10 @@ var hosts = toHostObj(uniqueIPs, hostPrefix);
 var ipHostMap = toIPHostMap(uniqueIPs, hostPrefix);
 
 var list = {
-    all: {
-        vars: {
+    "all": {
+        "vars": {
             "registry": configuration.registry[0] + ":5000",
-            registry_config: {
+            "registry_config": {
                 "hostname": "registry",
                 "port": 5000,
                 "ip": configuration.registry[0]
@@ -73,17 +73,17 @@ var list = {
             "dns_servers": configuration.dns_servers
         }
     },
-    masters: {
-        hosts: toHostArray(configuration.masters, ipHostMap),
-        vars: {
+    "masters": {
+        "hosts": toHostArray(configuration.masters, ipHostMap),
+        "vars": {
             "cluster_name": configuration.cluster_name
         }
     },
-    agents: {
-        hosts: toHostArray(configuration.agents, ipHostMap)
+    "agents": {
+        "hosts": toHostArray(configuration.agents, ipHostMap)
     },
-    registry: {
-        hosts: toHostArray(configuration.registry, ipHostMap)
+    "registry": {
+        "hosts": toHostArray(configuration.registry, ipHostMap)
     },
     "_meta": {
         "hostvars": hosts
