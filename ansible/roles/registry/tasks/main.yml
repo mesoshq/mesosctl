@@ -15,8 +15,11 @@
     path: /opt/registry/certs
     state: directory
 
+- name: Prepare for IP SANs for SSL cert
+  shell: echo "subjectAltName = IP:{{ registry_config.ip }}" > /opt/registry/certs/extfile.cnf
+
 - name: Create self-signed SSL cert
-  command: 'openssl req -new -nodes -x509 -subj "/C=DE/ST=Hamburg/L=Hamburg/O=IT/CN={{registry_config.hostname}}" -days 3650 -keyout /opt/registry/certs/registry.key -out /opt/registry/certs/registry.crt -extensions v3_ca creates=/opt/registry/certs/registry.crt'
+  command: 'openssl req -new -nodes -x509 -subj "/C=DE/ST=Hamburg/L=Hamburg/O=IT/CN={{registry_config.hostname}}" -days 3650 -extensions /opt/registry/certs/extfile.cnf -keyout /opt/registry/certs/registry.key -out /opt/registry/certs/registry.crt -extensions v3_ca creates=/opt/registry/certs/registry.crt'
 
 - include: Debian.yml
   when: ansible_os_family == "Debian"
