@@ -1,18 +1,10 @@
 ---
 
 - name: Install docker-py
-  pip: name=docker-py
+  pip: name=docker-py executable=/home/core/pypy/bin/pip
 
 - name: Install httplib2
-  pip: name=httplib2
-
-#- name: Add the local Docker registry and the local hostname with the private IP address to /etc/hosts
-#  become: yes
-#  become_user: root
-#  lineinfile:
-#    dest: /etc/hosts
-#    line: "{{ ansible_ssh_host }} {{ ansible_hostname }}\n{{ registry_config.ip }} {{ registry_config.hostname }}"
-#    insertafter: EOF
+  pip: name=httplib2 executable=/home/core/pypy/bin/pip
 
 - name: Set /etc/hosts to enable local hostname resolution (for Mesos DNS and Marathon)
   become: yes
