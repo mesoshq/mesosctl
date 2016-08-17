@@ -21,7 +21,7 @@ After the cluster has been set up, `mesosctl` uses the APIs of the Mesos Masters
 
 ## Status
 
-The current version is `0.1.7`, which is an early release. We consider it as `alpha` and a developer preview.
+The current version is `0.1.8`, which is an early release. We consider it as `alpha` and a developer preview.
 
 ## Installation
 
@@ -188,7 +188,9 @@ If the configuration is valid, then you can start with the provisioning of the c
 mesosctl $ cluster provision --verbose
 ```
 
-This may take a while, because `mesosctl` will trigger the installation of all required software on the configured cluster hosts. Once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. You also check the cluster status via mesosctl` like this:
+This may take a while, because `mesosctl` will trigger the installation of all required software on the configured cluster hosts. If you used one of the Vagrant sample clusters (see above), once the provisioning of the cluster is finished, you'll have a 3 node cluster, where each node is running the Mesos Master, the Mesos Agent and a Marathon instance. The respective IP addresses can also be found in the Vagrant project's docs. 
+
+You can check the cluster status via `mesosctl` like this:
 
 ```bash
 mesosctl $ cluster status
