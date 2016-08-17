@@ -4,6 +4,10 @@
 
 - name: Install Docker Engine
   yum: name=docker-engine state=present
+
+# Fix for Docker 1.12.0, see https://github.com/docker/docker/issues/25098
+- name: Create docker.socket file manually
+  template: src=docker.socket.j2 dest=/usr/lib/systemd/system/docker.socket
   notify:
     - Reload systemd
     - Restart Docker

@@ -1,12 +1,12 @@
 ---
 # RedHat: Docker yum repository URL
-docker_yum_repo: "https://yum.dockerproject.org/repo/main/{{ ansible_distribution | lower }}/{{ ansible_distribution_major_version }}"
+docker_yum_repo: "https://yum.dockerproject.org/repo/main/{{ ansible_distribution | lower }}/{{ ansible_distribution_major_version }}/"
 docker_yum_repo_gpg: 'https://yum.dockerproject.org/gpg'
 
 docker_version:
 
 # Prior to 1.9, starting Docker engine as daemon use flag '-d' was used, now it's 'daemon' argument
-docker_daemon_opts: "{{ 'daemon' if docker_version == '' or docker_version | version_compare('1.9', '>=') else '-d' }}{{ ' -H fd://' if ansible_os_family == 'RedHat' else ''}}"
+docker_daemon_opts: "{{ 'daemon' if docker_version == '' or docker_version | version_compare('1.9', '>=') else '-d' }}"
 
 # Set the local registry as insecure registry
 docker_opts: '"--insecure-registry {{ registry_config.hostname }}:{{ registry_config.port }}"'
