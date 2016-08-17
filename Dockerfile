@@ -40,6 +40,6 @@ RUN apk add --no-cache curl make gcc g++ python linux-headers paxctl libgcc libs
     /usr/share/man /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp /root/.gnupg \
     /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html
 
-RUN npm install -g mesosctl@0.1.6
+RUN npm install -g mesosctl@0.1.7
 
 CMD [ "mesosctl", "--version" ]
