@@ -3,9 +3,6 @@
   become_user: root
   template: src=registry.service.j2 dest=/etc/systemd/system/registry.service
   register: result
-  notify:
-    - start unit update
-  tags: registry
 
 - name: Ensure systemd is reloaded if registry.service has been added
   become: yes

@@ -20,19 +20,12 @@
 
 - name: Make sure Mesos Slave is configured
   template: src=mesos-slave.service.j2 dest=/etc/systemd/system/mesos-slave.service
-  register: result
-  notify:
-    - start mesos-slave
-  tags: mesos-slave
 
 - name: Ensure systemd is reloaded if mesos-slave.service has changed
   shell: systemctl daemon-reload
-  when: result|changed
 
 - name: (Re)start mesos-slave.service
   shell: systemctl restart mesos-slave.service
-  when: result|changed
 
 - name: Make sure Mesos Slave is running and enabled
   service: name=mesos-slave.service state=running enabled=yes
-  tags: mesos-slave

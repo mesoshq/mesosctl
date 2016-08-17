@@ -2,6 +2,7 @@
   raw: stat $HOME/.bootstrapped
   register: need_bootstrap
   ignore_errors: True
+  failed_when: no
 
 - name: Run bootstrap.sh
   script: bootstrap.sh

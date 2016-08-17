@@ -27,16 +27,11 @@
   become: yes
   become_user: root
   template: src="{{ansible_os_family}}/50-insecure-registry.conf.j2" dest=/etc/systemd/system/docker.service.d/50-insecure-registry.conf
-  register: result
-  notify:
-    - start unit update
-  tags: registry
 
 - name: Ensure systemd is reloaded after 30-increase-ulimit.conf and 50-insecure-registry.conf have been added
   become: yes
   become_user: root
   shell: systemctl daemon-reload
-  when: result|changed
 
 - name: Restart Docker service
   become: yes
