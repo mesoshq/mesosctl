@@ -21,7 +21,7 @@ After the cluster has been set up, `mesosctl` uses the APIs of the Mesos Masters
 
 ## Status
 
-The current version is `0.1.6`, which is an early release. We consider it as `alpha` and a developer preview.
+The current version is `0.1.7`, which is an early release. We consider it as `alpha` and a developer preview.
 
 ## Installation
 
@@ -39,7 +39,7 @@ You can install the NPM package globally by running
 When installing via the NPM package, `mesosctl` expects the following tools to by present on your system:
 
 * [Node.js](https://nodejs.org/en/download/) >= 4 and [NPM](https://www.npmjs.com/)
-* [Ansible](http://docs.ansible.com/ansible/intro_installation.html) >= 2.0.2.0
+* [Ansible](http://docs.ansible.com/ansible/intro_installation.html) >= 2.1.1.0
 
 **Docker**
 
