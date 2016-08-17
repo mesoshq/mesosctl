@@ -16,7 +16,8 @@
     },
     "os_family": {
       "description": "Operation system family name / code",
-      "type": "string"
+      "type": "string",
+      "enum": ["CoreOS", "RedHat", "Debian"]
     },
     "ssh_user": {
       "description": "SSH user name",
@@ -87,5 +88,5 @@
       "description": "Indicates whether the configuration has been provisioned or not"
     }
   },
-  "required": ["cluster_name", "os", "ssh_key_path", "ssh_port", "ssh_user", "dns_servers", "masters", "agents", "registry"]
+  "required": ["cluster_name", "os_family", "ssh_key_path", "ssh_port", "ssh_user", "dns_servers", "masters", "agents", "registry"]
 }
