@@ -3,7 +3,7 @@ FROM williamyeh/ansible:alpine3
 MAINTAINER tobilg@gmail.com
 
 # Node.js installation taken from https://github.com/mhart/alpine-node/blob/master/Dockerfile
-ENV VERSION=v4.4.5 NPM_VERSION=2
+ENV VERSION=v4.5.0 NPM_VERSION=2
 
 ENV CONFIG_FLAGS="--fully-static" DEL_PKGS="libgcc libstdc++" RM_DIRS=/usr/include
 
