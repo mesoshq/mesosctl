@@ -6,7 +6,7 @@ var Ajv = require("ajv"),
     yaml = require('js-yaml'),
     MesosDNSAgent = require("mesosdns-http-agent"),
     AsciiTable = require('ascii-table'),
-    fsAutocomplete = require('vorpal-autocomplete-fs');
+    chalk = require('chalk');
 
 var ajv = Ajv({ loadSchema: function (uri, callback) {
         request({ url: uri, json:true, method: "GET" }, function(err, res, body) {
@@ -18,7 +18,7 @@ var ajv = Ajv({ loadSchema: function (uri, callback) {
     }});
 
 function handleError (error, data) {
-    console.log("--> " + error + (data && data.message ? data.message + (data.details && data.details[0] && data.details[0].errors && data.details[0].errors[0] ? " (Details: " + data.details[0].errors[0] +")" : "") : ""));
+    console.log(chalk.red("--> " + error + (data && data.message ? data.message + (data.details && data.details[0] && data.details[0].errors && data.details[0].errors[0] ? " (Details: " + data.details[0].errors[0] +")" : "") : "")));
 }
 
 function isValidSchema (type, data, callback) {
@@ -32,9 +32,24 @@ function isValidSchema (type, data, callback) {
         var schema = JSON.parse(fs.readFileSync(path.join(__dirname, "../", "lib/schema", "marathon_" + type + ".json")));
 
         ajv.compileAsync(schema, function (err, validate) {
+
             if (err) callback(err, null);
+
             var valid = validate(data);
-            callback(null, valid);
+            if (!valid) {
+                if (validate.errors.length > 0) {
+                    var messages = [];
+                    validate.errors.forEach(function (error) {
+                        messages.push(" * " + error.dataPath + " " + error.message);
+                    });
+                    callback("\n" + messages.join("\n"), valid);
+                } else {
+                    callback("The app definition has no valid schema!", valid);
+                }
+            } else {
+                callback(null, valid);
+            }
+
         });
         
     } else {
@@ -51,6 +66,7 @@ function loadJSON (filePath, schemaType, callback) {
 
         // Schema check is requested, or not
         if (schemaType) {
+
             isValidSchema(schemaType, fileContents, function (error, isValid) {
                 if (error) {
                     callback(error, null);
@@ -62,6 +78,7 @@ function loadJSON (filePath, schemaType, callback) {
                     }
                 }
             });
+
         } else {
             callback(null, fileContents);
         }
@@ -260,7 +277,6 @@ var opsMap = {
                 "description": "Starts an app with a specific configuration",
                 "required": ["pathToJSON"],
                 "optional": ["--force"],
-                "autocomplete": fsAutocomplete,
                 "custom": function (args, callback) {
                     // Check if "pathToJSON" is present
                     if (args["pathToJSON"]) {
