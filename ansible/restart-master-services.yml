@@ -5,11 +5,11 @@
   become: yes
   become_user: root
   tasks:
-    - name: Restart zookeeper
+    - name: Restart ZooKeeper
       service: name=zookeeper state=restarted
 
-    - name: Restart mesos-master
+    - name: Restart Mesos Master
       service: name=mesos-master state=restarted
 
-    - name: Restart marathon
+    - name: Restart Marathon
       service: name=marathon state=restarted

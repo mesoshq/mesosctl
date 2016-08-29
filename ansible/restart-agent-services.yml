@@ -5,5 +5,5 @@
   become: yes
   become_user: root
   tasks:
-    - name: Restart mesos-agent
+    - name: Restart Mesos Agent
       service: name=mesos-slave state=restarted

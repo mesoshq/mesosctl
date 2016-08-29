@@ -84,7 +84,7 @@ function getUtilizationStats(dnsServers, cb) {
     };
 
     try {
-        request(options, function(error, response, body) {
+        request(options, function(error, res, body) {
             if (error) {
                 cb(error, null);
             } else {
@@ -199,9 +199,9 @@ function provision (mesosCtl, options, callback) {
 
         // Log playbook starts
         if (foundPlay && foundPlay.length === 2) {
-            console.log("-----------------------------------------------------------");
+            console.log("---------------------------------------------------------------------");
             console.log("Starting play " + foundPlay[1]);
-            console.log("-----------------------------------------------------------");
+            console.log("---------------------------------------------------------------------");
         }
 
         if (checkOutput) {
@@ -245,9 +245,88 @@ function provision (mesosCtl, options, callback) {
             });
         }
 
-        console.log("-----------------------------------------------------------");
+        console.log("---------------------------------------------------------------------");
         console.log("Error(s) occurred:");
-        console.log("-----------------------------------------------------------");
+        console.log("---------------------------------------------------------------------");
+        if (realErrors && realErrors.length > 0) {
+            console.log(realErrors.join("\n"));
+        } else {
+            console.log(error.toString());
+        }
+
+        callback();
+
+    });
+
+}
+
+function restartServices (mesosCtl, options, callback) {
+
+    // Set Ansible working directory
+    var ansibleWorkDir = path.join(__dirname, "../", "ansible");
+
+    // Set MESOSCTL_CONFIGURATION_PATH environment variable for the dynamic inventory
+    process.env.MESOSCTL_CONFIGURATION_PATH = mesosCtl.currentConfigPath;
+
+    var taskMatcher = /TASK \[(.*)\]/;
+    var playMatcher = /PLAY \[(.*)\]/;
+    var storedOutput = "";
+    var checkOutput = false;
+    var playbook = new Ansible.Playbook().playbook(ansibleWorkDir + "/restart-services");
+
+    // Log the proceeding installation steps
+    playbook.on('stdout', function(data) {
+        var output = data.toString();
+        var foundPlay = output.match(playMatcher);
+        var foundTask = output.match(taskMatcher);
+        var foundInclude = (output.match(/include/) === null ? false : true);
+        var foundSkipped = (output.match(/skipping/) === null ? false : true); // If skipped, don't show!
+
+        // Log playbook starts
+        if (foundPlay && foundPlay.length === 2) {
+            console.log("---------------------------------------------------------------------");
+            console.log("Starting play " + foundPlay[1]);
+            console.log("---------------------------------------------------------------------");
+        }
+
+        if (checkOutput) {
+            if (!foundSkipped && options && options.verbose) {
+                console.log("Starting task " + storedOutput);
+            }
+            checkOutput = false;
+        } else {
+            if (foundTask && foundTask.length === 2 && !foundInclude) {
+                storedOutput = foundTask[1];
+                checkOutput = true;
+            }
+        }
+
+    });
+
+    playbook.exec({ cwd: ansibleWorkDir }).then(function(successResult) {
+
+        callback();
+
+    }, function(error) {
+
+        var fatalGlobalMatcher = /(fatal:.*)/g;
+        var fatalRealMatcher = /^(fatal)(?!.*?lxc-docker).*$/g;
+        var globalErrors = error.toString().match(fatalGlobalMatcher);
+        var realErrors = [];
+
+        // Check if the global error signatures found match the "real" error signatures (omit ignored fatal messages)
+        if (globalErrors && globalErrors.length > 0) {
+            globalErrors.forEach(function (globalError) {
+                var found = globalError.match(fatalRealMatcher);
+                if (found && found.length > 0) {
+                    realErrors.push(globalError);
+                }
+            });
+        }
+
+        console.log("---------------------------------------------------------------------");
+        console.log("Error(s) occurred:");
+        console.log("---------------------------------------------------------------------");
         if (realErrors && realErrors.length > 0) {
             console.log(realErrors.join("\n"));
         } else {
@@ -262,6 +341,28 @@ function provision (mesosCtl, options, callback) {
 
 module.exports = function(vorpal, mesosCtl) {
 
+    vorpal
+        .command('cluster restart services', 'Restarts the Mesos Master, Agent, ZooKeeper and Marathon services')
+        .option("--verbose", "Set the verbose logging of the provision process")
+        .action(function (args, callback) {
+
+            var self = this;
+
+            // Check if the configuration has been provisioned and if it has a valid configuration
+            if (!mesosCtl.hasValidConfig || !mesosCtl.currentConfigPath) {
+
+                self.log("--> Currently there is no valid configuration loaded! Therefore, the cluster cannot be provisioned!");
+                callback();
+
+            } else {
+
+                // Trigger service restart
+                restartServices(mesosCtl, args.options, callback);
+
+            }
+
+        });
+    
     vorpal
         .command('cluster provision', 'Provisions the cluster based on the current configuration')
         .option("--verbose", "Set the verbose logging of the provision process")

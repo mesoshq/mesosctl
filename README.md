@@ -259,6 +259,7 @@ cluster status                               Display the cluster status
 cluster status agent <agentIPAddress>        Display the Mesos agent status and utilization
 cluster ssh <ipAddress> [command]            Issue a SSH command on the remote host. The command must be wrapped in double quotation marks, like `"ls -la"`.
 cluster get leader                           Returns the currently leading Mesos Master's IP address
+cluster restart services                     Restarts the ZooKeeper, Master, Agent and Marathon services on both Masters and Agents
 ```
 
 ### Repository

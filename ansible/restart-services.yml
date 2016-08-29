@@ -1,0 +1,6 @@
+---
+# file: restart-all.yml
+# * Restarts the Mesos Master, ZooKeeper and Marathon services on Master nodes
+# * Restart the Mesos Agent service on Agent nodes
+- include: restart-master-services.yml
+- include: restart-agent-services.yml
