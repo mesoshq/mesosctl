@@ -1,5 +1,7 @@
 # mesosctl
 
+[![Package version](https://img.shields.io/npm/v/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package downloads](https://img.shields.io/npm/dt/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package license](https://img.shields.io/npm/l/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package Quality](http://npm.packagequality.com/badge/mesosctl.png)](http://packagequality.com/#?package=mesosctl)
+
 A command-line tool to dynamically provision and manage Mesos clusters and their applications.
  
 ## Motivation
