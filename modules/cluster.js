@@ -32,9 +32,11 @@ function extractPorts(portString) {
     return portCount;
 }
 
-function renderUtilization(utilization, header) {
+function renderUtilization(vorpal, utilization, header) {
 
-    console.log(os.EOL + header + os.EOL);
+    vorpal.log(os.EOL + header + os.EOL);
+
+    // TODO: Find a way to use the vorpal output stream for logging via the `stream` option 
 
     var cpuBar = new ProgressBar('  CPU    [:bar] :percent\n', {
         complete: '=',
@@ -68,7 +70,7 @@ function renderUtilization(utilization, header) {
     });
     portsBar.tick(utilization.ports);
 
-    console.log("");
+    vorpal.log("");
 
 }
 
@@ -435,7 +437,7 @@ module.exports = function(vorpal, mesosCtl) {
                         callback();
                     } else {
                         // Render the stats
-                        renderUtilization(utilization.cluster.utilization, "Cluster '" + mesosCtl.config.cluster_name + "' utilization:");
+                        renderUtilization(vorpal, utilization.cluster.utilization, "Cluster '" + mesosCtl.config.cluster_name + "' utilization:");
 
                         // Trigger callback
                         callback();
