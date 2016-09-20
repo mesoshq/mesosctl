@@ -4,4 +4,9 @@ images:
   master: mesosphere/mesos-master:1.0.1-2.0.93.ubuntu1404
   agent: mesosphere/mesos-slave:1.0.1-2.0.93.ubuntu1404
   marathon: mesosphere/marathon:v1.3.0
-  mesosdns: tobilg/mesos-dns:v0.6.0
+  mesosdns: tobilg/mesos-dns:v0.5.2
+
+# For Debian/RedHat also configure
+# roles/registry/vars/Debian.yml
+# roles/registry/vars/RedHat.yml
+# when updating Docker images!
