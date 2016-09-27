@@ -2,7 +2,7 @@
 
 [![Package version](https://img.shields.io/npm/v/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package downloads](https://img.shields.io/npm/dt/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package license](https://img.shields.io/npm/l/mesosctl.svg)](https://www.npmjs.com/package/mesosctl)
 
-A command-line tool to dynamically provision and manage Mesos clusters and their applications.
+A command-line tool to dynamically provision and manage Mesos clusters and their applications. Try it live with [Katacoda](https://www.katacoda.com/mesoshq/scenarios/1)!
  
 ## Motivation
 
@@ -321,3 +321,7 @@ task show [options] <task>                   Retrieves information about a task
 task log [options] <taskId> [file]           Print the task log. By default, the 10 most recent task logs from stdout are printed.
 task ls <taskId> [path]                      Print the list of files in the Mesos task sandbox
 ```
+
+## Thanks
+
+A special "thank you" goes to [Ben Hall](https://twitter.com/ben_hall) and [Team Katacoda](https://www.katacoda.com) for providing an interactive environment for testing `mesosctl`, for free!
