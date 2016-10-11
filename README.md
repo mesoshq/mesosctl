@@ -1,6 +1,6 @@
 # mesosctl
 
-[![Package version](https://img.shields.io/npm/v/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package downloads](https://img.shields.io/npm/dt/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package license](https://img.shields.io/npm/l/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Run on Katacoda](https://img.shields.io/badge/Run-on%20Katacoda-00b7ef.svg)](https://www.katacoda.com/mesoshq/scenarios/1)
+[![Package version](https://img.shields.io/npm/v/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package downloads](https://img.shields.io/npm/dt/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Package license](https://img.shields.io/npm/l/mesosctl.svg)](https://www.npmjs.com/package/mesosctl) [![Run on Katacoda](https://img.shields.io/badge/Run-on%20Katacoda-00b7ef.svg)](https://www.katacoda.com/mesoshq/scenarios/1) [![Slack Status](https://mesosctl.herokuapp.com/badge.svg)](https://mesosctl.herokuapp.com)
 
 A command-line tool to dynamically provision and manage Mesos clusters and their applications. Try it live with [Katacoda](https://www.katacoda.com/mesoshq/scenarios/1)!
  
